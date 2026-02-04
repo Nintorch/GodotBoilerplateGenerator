@@ -1,0 +1,170 @@
+name input_haptic_effect core/input/
+
+include "core/object/ref_counted.h"
+
+class InputHapticEffect : RefCounted
+
+header_text
+public:
+text_end
+enum Type
+HAPTIC_EFFECT_CONSTANT
+HAPTIC_EFFECT_SINE
+HAPTIC_EFFECT_SQUARE
+HAPTIC_EFFECT_TRIANGLE
+HAPTIC_EFFECT_SAWTOOTH_UP
+HAPTIC_EFFECT_SAWTOOTH_DOWN
+HAPTIC_EFFECT_RAMP
+HAPTIC_EFFECT_SPRING
+HAPTIC_EFFECT_DAMPER
+HAPTIC_EFFECT_INERTIA
+HAPTIC_EFFECT_FRICTION
+HAPTIC_EFFECT_LEFT_RIGHT
+HAPTIC_EFFECT_CUSTOM
+enum_end
+prop float direction_radians = 0; rad
+prop float duration = 0; 0.0f; (float)(UINT32_MAX / 1000)
+_bind_methods
+header_text
+public:
+	virtual Type get_type() const = 0;
+text_end
+
+class_end
+
+class InputHapticEffectConstant : InputHapticEffect
+
+prop float force = 0; -1.0; 1.0
+prop float attack_length = 0; 0.0f; UINT16_MAX / 1000.0f
+prop float attack_level = 0; 0.0; 1.0
+prop float fade_length = 0; 0.0f; UINT16_MAX / 1000.0f
+prop float fade_level = 0; 0.0; 1.0
+_bind_methods
+header_text
+public:
+	virtual Type get_type() const override { return HAPTIC_EFFECT_CONSTANT; }
+text_end
+
+class_end
+
+class InputHapticEffectPeriodic : InputHapticEffect
+
+header_text
+	Type type = HAPTIC_EFFECT_SINE;
+text_end
+
+prop float period = 0; 0.0f; UINT16_MAX / 1000.0f
+prop float magnitude = 0; -1.0; 1.0
+prop float offset = 0; -1.0; 1.0
+prop float phase = 0; rad
+
+prop float attack_length = 0; 0.0f; UINT16_MAX / 1000.0f
+prop float attack_level = 0; 0.0; 1.0
+prop float fade_length = 0; 0.0f; UINT16_MAX / 1000.0f
+prop float fade_level = 0; 0.0; 1.0
+_bind_methods
+header_text
+public:
+	virtual Type get_type() const override { return type; }
+	void set_type(Type p_type);
+text_end
+code_text
+void InputHapticEffectPeriodic::set_type(Type p_type) {
+	switch (p_type) {
+		case HAPTIC_EFFECT_SINE:
+		case HAPTIC_EFFECT_SQUARE:
+		case HAPTIC_EFFECT_TRIANGLE:
+		case HAPTIC_EFFECT_SAWTOOTH_UP:
+		case HAPTIC_EFFECT_SAWTOOTH_DOWN:
+			type = p_type;
+			break;
+		default:
+			break;
+	}
+}
+text_end
+
+class_end
+
+class InputHapticEffectCondition : InputHapticEffect
+
+header_text
+	Type type;
+text_end
+
+prop Vector3 right_level; 0.0; 1.0
+prop Vector3 left_level; 0.0; 1.0
+prop Vector3 right_coef; -1.0; 1.0
+prop Vector3 left_coef; -1.0; 1.0
+prop Vector3 deadband; 0.0; 1.0
+prop Vector3 center; -1.0; 1.0
+_bind_methods
+header_text
+public:
+	virtual Type get_type() const override { return type; }
+	void set_type(Type p_type);
+text_end
+code_text
+void InputHapticEffectCondition::set_type(Type p_type) {
+	switch (p_type) {
+		case HAPTIC_EFFECT_SPRING:
+		case HAPTIC_EFFECT_DAMPER:
+		case HAPTIC_EFFECT_INERTIA:
+		case HAPTIC_EFFECT_FRICTION:
+			type = p_type;
+			break;
+		default:
+			break;
+	}
+}
+text_end
+
+class_end
+
+class InputHapticEffectLeftRight : InputHapticEffect
+
+prop float large_magnitude = 0; 0.0; 1.0
+prop float small_magnitude = 0; 0.0; 1.0
+_bind_methods
+header_text
+public:
+	virtual Type get_type() const override { return HAPTIC_EFFECT_LEFT_RIGHT; }
+text_end
+
+class_end
+
+class InputHapticEffectRamp : InputHapticEffect
+
+prop float start_strength = 0; -1.0; 1.0
+prop float end_strength = 0; -1.0; 1.0
+
+prop float attack_length = 0; 0.0f; UINT16_MAX / 1000.0f
+prop float attack_level = 0; 0.0; 1.0
+prop float fade_length = 0; 0.0f; UINT16_MAX / 1000.0f
+prop float fade_level = 0; 0.0; 1.0
+_bind_methods
+header_text
+public:
+	virtual Type get_type() const override { return HAPTIC_EFFECT_RAMP; }
+text_end
+
+class_end
+
+class InputHapticEffectCustom : InputHapticEffect
+
+prop int channels = 0; 0; UINT8_MAX
+prop int period = 0; 0.0f; UINT16_MAX / 1000.0f
+prop int samples = 0; 0; UINT16_MAX
+prop PackedByteArray data
+
+prop float attack_length = 0; 0.0f; UINT16_MAX / 1000.0f
+prop float attack_level = 0; 0.0; 1.0
+prop float fade_length = 0; 0.0f; UINT16_MAX / 1000.0f
+prop float fade_level = 0; 0.0; 1.0
+_bind_methods
+header_text
+public:
+	virtual Type get_type() const override { return HAPTIC_EFFECT_CUSTOM; }
+text_end
+
+class_end
