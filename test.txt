@@ -1,4 +1,4 @@
-name input_haptic_effect core/input/
+name D:\GodotSource\core\input\input_haptic_effect core/input/
 
 include "core/object/ref_counted.h"
 
