@@ -1,6 +1,10 @@
 name D:\GodotSource\core\input\input_haptic_effect core/input/
 
 include "core/object/ref_counted.h"
+include "core/variant/type_info.h"
+code_text
+#include "core/object/class_db.h"
+text_end
 
 class InputHapticEffect : RefCounted
 
@@ -22,23 +26,34 @@ HAPTIC_EFFECT_FRICTION
 HAPTIC_EFFECT_LEFT_RIGHT
 HAPTIC_EFFECT_CUSTOM
 enum_end
-prop float direction_radians = 0; rad
-prop float duration = 0; 0.0f; (float)(UINT32_MAX / 1000)
+prop float direction_radians = (float)Math::PI / 2; rad
+prop float direction_degrees; custom_methods
+prop float duration = 1.0f; 0.0f; (float)(UINT32_MAX / 1000)
+method get_type
 _bind_methods
 header_text
 public:
 	virtual Type get_type() const = 0;
+text_end
+code_text
+void InputHapticEffect::set_direction_degrees(float p_direction_degrees) {
+	set_direction_radians(p_direction_degrees * (float)Math::PI / 180.0f);
+}
+
+float InputHapticEffect::get_direction_degrees() const {
+	return get_direction_radians() * 180.0f / (float)Math::PI;
+}
 text_end
 
 class_end
 
 class InputHapticEffectConstant : InputHapticEffect
 
-prop float force = 0; -1.0; 1.0
-prop float attack_length = 0; 0.0f; UINT16_MAX / 1000.0f
-prop float attack_level = 0; 0.0; 1.0
-prop float fade_length = 0; 0.0f; UINT16_MAX / 1000.0f
-prop float fade_level = 0; 0.0; 1.0
+prop float force = 0.5; -1.0; 1.0
+prop float attack_length = 1.0f; 0.0f; UINT16_MAX / 1000.0f
+prop float attack_level = 0.5; 0.0; 1.0
+prop float fade_length = 1.0f; 0.0f; UINT16_MAX / 1000.0f
+prop float fade_level = 0.5; 0.0; 1.0
 _bind_methods
 header_text
 public:
@@ -53,15 +68,16 @@ header_text
 	Type type = HAPTIC_EFFECT_SINE;
 text_end
 
-prop float period = 0; 0.0f; UINT16_MAX / 1000.0f
-prop float magnitude = 0; -1.0; 1.0
+prop float period = 1.0f; 0.0f; UINT16_MAX / 1000.0f
+prop float magnitude = 1.0f; -1.0; 1.0
 prop float offset = 0; -1.0; 1.0
 prop float phase = 0; rad
 
-prop float attack_length = 0; 0.0f; UINT16_MAX / 1000.0f
-prop float attack_level = 0; 0.0; 1.0
-prop float fade_length = 0; 0.0f; UINT16_MAX / 1000.0f
-prop float fade_level = 0; 0.0; 1.0
+prop float attack_length = 1.0f; 0.0f; UINT16_MAX / 1000.0f
+prop float attack_level = 0.5; 0.0; 1.0
+prop float fade_length = 1.0f; 0.0f; UINT16_MAX / 1000.0f
+prop float fade_level = 0.5; 0.0; 1.0
+method set_type p_type
 _bind_methods
 header_text
 public:
@@ -98,6 +114,7 @@ prop Vector3 right_coef; -1.0; 1.0
 prop Vector3 left_coef; -1.0; 1.0
 prop Vector3 deadband; 0.0; 1.0
 prop Vector3 center; -1.0; 1.0
+method set_type p_type
 _bind_methods
 header_text
 public:
@@ -123,8 +140,8 @@ class_end
 
 class InputHapticEffectLeftRight : InputHapticEffect
 
-prop float large_magnitude = 0; 0.0; 1.0
-prop float small_magnitude = 0; 0.0; 1.0
+prop float large_magnitude = 0.5f; 0.0; 1.0
+prop float small_magnitude = 0.5f; 0.0; 1.0
 _bind_methods
 header_text
 public:
@@ -135,13 +152,13 @@ class_end
 
 class InputHapticEffectRamp : InputHapticEffect
 
-prop float start_strength = 0; -1.0; 1.0
-prop float end_strength = 0; -1.0; 1.0
+prop float start_strength = 0.0f; -1.0; 1.0
+prop float end_strength = 1.0f; -1.0; 1.0
 
-prop float attack_length = 0; 0.0f; UINT16_MAX / 1000.0f
-prop float attack_level = 0; 0.0; 1.0
-prop float fade_length = 0; 0.0f; UINT16_MAX / 1000.0f
-prop float fade_level = 0; 0.0; 1.0
+prop float attack_length = 1.0f; 0.0f; UINT16_MAX / 1000.0f
+prop float attack_level = 0.5; 0.0; 1.0
+prop float fade_length = 1.0f; 0.0f; UINT16_MAX / 1000.0f
+prop float fade_level = 0.5; 0.0; 1.0
 _bind_methods
 header_text
 public:
@@ -157,10 +174,10 @@ prop int samples = 0; 0; UINT16_MAX
 prop float period = 0; 0.0f; UINT16_MAX / 1000.0f
 prop PackedInt32Array data
 
-prop float attack_length = 0; 0.0f; UINT16_MAX / 1000.0f
-prop float attack_level = 0; 0.0; 1.0
-prop float fade_length = 0; 0.0f; UINT16_MAX / 1000.0f
-prop float fade_level = 0; 0.0; 1.0
+prop float attack_length = 1.0f; 0.0f; UINT16_MAX / 1000.0f
+prop float attack_level = 0.5; 0.0; 1.0
+prop float fade_length = 1.0f; 0.0f; UINT16_MAX / 1000.0f
+prop float fade_level = 0.5; 0.0; 1.0
 _bind_methods
 header_text
 public:
@@ -168,3 +185,7 @@ public:
 text_end
 
 class_end
+
+header_text
+VARIANT_ENUM_CAST(InputHapticEffect::Type);
+text_end

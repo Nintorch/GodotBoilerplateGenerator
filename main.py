@@ -14,6 +14,7 @@ text_mode = 0
 class_name = ""
 class_properties = []
 class_constants = []
+class_methods = []
 
 commands = {}
 
@@ -53,7 +54,10 @@ def run():
                     header_output += f"(Unknown command: {current_command})\n"
                     code_output += f"(Unknown command: {current_command})\n"
         else:
-            header_output += '\n'
+            if text_mode <= 1:
+                header_output += '\n'
+            else:
+                code_output += '\n'
         index += 1
 
 @command("name")
@@ -173,13 +177,32 @@ def cmd_text_start(line):
     global text_mode
     text_mode = 2
 
+@command("method")
+def cmd_method(line):
+    global class_methods
+    split = line.split()
+    method_name = split[1]
+    if len(split) > 2:
+        args = split[2:]
+    else:
+        args = []
+    class_methods.append([method_name, args])
+
+
 @command("_bind_methods")
 def cmd_bind_methods(line):
+    global class_methods
     code_output = "void " + class_name + "::_bind_methods() {\n"
 
     for prop in class_properties:
         code_output += f'\tClassDB::bind_method(D_METHOD("set_{prop[1]}", "{prop[1]}"), &{class_name}::set_{prop[1]});\n'
         code_output += f'\tClassDB::bind_method(D_METHOD("get_{prop[1]}"), &{class_name}::get_{prop[1]});\n\n'
+
+    for method in class_methods:
+        if method[1]:
+            code_output += f'\tClassDB::bind_method(D_METHOD("{method[0]}", {", ".join('"' + arg + '"' for arg in method[1])}), &{class_name}::{method[0]});\n\n'
+        else:
+            code_output += f'\tClassDB::bind_method(D_METHOD("{method[0]}"), &{class_name}::{method[0]});\n\n'
 
     prop_types = {
         "float": "FLOAT",
@@ -203,6 +226,7 @@ def cmd_bind_methods(line):
         code_output += "\tBIND_CONSTANT(" + const + ");\n"
 
     code_output = code_output.rstrip() + "\n}\n\n"
+    class_methods = []
     return ["""
 protected:
 	static void _bind_methods();
@@ -220,7 +244,10 @@ def cmd_prop(line: str):
     if len(split_parts) > 1:
         result.extend([x.strip() for x in split_parts[1:]])
     class_properties.append(result)
-    return ["\t" + split_parts[0][len(split[0])+1:] + ';\n', ""]
+    if len(result) < 3 or result[2] != "custom_methods":
+        return ["\t" + split_parts[0][len(split[0])+1:] + ';\n', ""]
+    else:
+        return ["", ""]
 
 @command("enum")
 def cmd_enum(line: str):
@@ -254,6 +281,8 @@ def class_end(line):
 
     code_output = ""
     for prop in class_properties:
+        if len(prop) >= 3 and prop[2] == "custom_methods":
+            continue
         parameter = f"{prop[0]} p_{prop[1]}"
         if prop[0] not in ["int", "float"]:
             parameter = f"const {prop[0]} &p_{prop[1]}"
@@ -281,6 +310,7 @@ def class_end(line):
 
     class_properties = []
     class_constants = []
+    class_methods = []
 
     return [header_output, code_output]
     
