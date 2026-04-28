@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
+#include "core/variant/type_info.h"
 
 class InputHapticEffect : public RefCounted {
 	GDCLASS(InputHapticEffect, RefCounted);
@@ -52,8 +53,8 @@ public:
 		HAPTIC_EFFECT_CUSTOM,
 	};
 
-	float direction_radians = 0;
-	float duration = 0;
+	float direction_radians = (float)Math::PI / 2;
+	float duration = 1.0f;
 
 protected:
 	static void _bind_methods();
@@ -64,6 +65,9 @@ public:
 	void set_direction_radians(float p_direction_radians);
 	float get_direction_radians() const;
 
+	void set_direction_degrees(float p_direction_degrees);
+	float get_direction_degrees() const;
+
 	void set_duration(float p_duration);
 	float get_duration() const;
 };
@@ -71,11 +75,11 @@ public:
 class InputHapticEffectConstant : public InputHapticEffect {
 	GDCLASS(InputHapticEffectConstant, InputHapticEffect);
 
-	float force = 0;
-	float attack_length = 0;
-	float attack_level = 0;
-	float fade_length = 0;
-	float fade_level = 0;
+	float force = 0.5;
+	float attack_length = 1.0f;
+	float attack_level = 0.5;
+	float fade_length = 1.0f;
+	float fade_level = 0.5;
 
 protected:
 	static void _bind_methods();
@@ -104,15 +108,15 @@ class InputHapticEffectPeriodic : public InputHapticEffect {
 
 	Type type = HAPTIC_EFFECT_SINE;
 
-	float period = 0;
-	float magnitude = 0;
+	float period = 1.0f;
+	float magnitude = 1.0f;
 	float offset = 0;
 	float phase = 0;
 
-	float attack_length = 0;
-	float attack_level = 0;
-	float fade_length = 0;
-	float fade_level = 0;
+	float attack_length = 1.0f;
+	float attack_level = 0.5;
+	float fade_length = 1.0f;
+	float fade_level = 0.5;
 
 protected:
 	static void _bind_methods();
@@ -149,7 +153,7 @@ public:
 class InputHapticEffectCondition : public InputHapticEffect {
 	GDCLASS(InputHapticEffectCondition, InputHapticEffect);
 
-	Type type;
+	Type type = HAPTIC_EFFECT_SPRING;
 
 	Vector3 right_level;
 	Vector3 left_level;
@@ -187,8 +191,8 @@ public:
 class InputHapticEffectLeftRight : public InputHapticEffect {
 	GDCLASS(InputHapticEffectLeftRight, InputHapticEffect);
 
-	float large_magnitude = 0;
-	float small_magnitude = 0;
+	float large_magnitude = 0.5f;
+	float small_magnitude = 0.5f;
 
 protected:
 	static void _bind_methods();
@@ -206,13 +210,13 @@ public:
 class InputHapticEffectRamp : public InputHapticEffect {
 	GDCLASS(InputHapticEffectRamp, InputHapticEffect);
 
-	float start_strength = 0;
-	float end_strength = 0;
+	float start_strength = 0.0f;
+	float end_strength = 1.0f;
 
-	float attack_length = 0;
-	float attack_level = 0;
-	float fade_length = 0;
-	float fade_level = 0;
+	float attack_length = 1.0f;
+	float attack_level = 0.5;
+	float fade_length = 1.0f;
+	float fade_level = 0.5;
 
 protected:
 	static void _bind_methods();
@@ -243,14 +247,14 @@ class InputHapticEffectCustom : public InputHapticEffect {
 	GDCLASS(InputHapticEffectCustom, InputHapticEffect);
 
 	int channels = 0;
-	int period = 0;
 	int samples = 0;
-	PackedByteArray data;
+	float period = 0;
+	PackedInt32Array data;
 
-	float attack_length = 0;
-	float attack_level = 0;
-	float fade_length = 0;
-	float fade_level = 0;
+	float attack_length = 1.0f;
+	float attack_level = 0.5;
+	float fade_length = 1.0f;
+	float fade_level = 0.5;
 
 protected:
 	static void _bind_methods();
@@ -261,14 +265,14 @@ public:
 	void set_channels(int p_channels);
 	int get_channels() const;
 
-	void set_period(int p_period);
-	int get_period() const;
-
 	void set_samples(int p_samples);
 	int get_samples() const;
 
-	void set_data(const PackedByteArray &p_data);
-	PackedByteArray get_data() const;
+	void set_period(float p_period);
+	float get_period() const;
+
+	void set_data(const PackedInt32Array &p_data);
+	PackedInt32Array get_data() const;
 
 	void set_attack_length(float p_attack_length);
 	float get_attack_length() const;
@@ -282,3 +286,5 @@ public:
 	void set_fade_level(float p_fade_level);
 	float get_fade_level() const;
 };
+
+VARIANT_ENUM_CAST(InputHapticEffect::Type);

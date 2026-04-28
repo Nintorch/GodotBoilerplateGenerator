@@ -30,14 +30,22 @@
 
 #include "core/input/input_haptic_effect.h"
 
+#include "core/object/class_db.h"
+
 void InputHapticEffect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_direction_radians", "direction_radians"), &InputHapticEffect::set_direction_radians);
 	ClassDB::bind_method(D_METHOD("get_direction_radians"), &InputHapticEffect::get_direction_radians);
 
+	ClassDB::bind_method(D_METHOD("set_direction_degrees", "direction_degrees"), &InputHapticEffect::set_direction_degrees);
+	ClassDB::bind_method(D_METHOD("get_direction_degrees"), &InputHapticEffect::get_direction_degrees);
+
 	ClassDB::bind_method(D_METHOD("set_duration", "duration"), &InputHapticEffect::set_duration);
 	ClassDB::bind_method(D_METHOD("get_duration"), &InputHapticEffect::get_duration);
 
+	ClassDB::bind_method(D_METHOD("get_type"), &InputHapticEffect::get_type);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "direction_radians"), "set_direction_radians", "get_direction_radians");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "direction_degrees"), "set_direction_degrees", "get_direction_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "duration"), "set_duration", "get_duration");
 
 	BIND_CONSTANT(HAPTIC_EFFECT_CONSTANT);
@@ -55,11 +63,16 @@ void InputHapticEffect::_bind_methods() {
 	BIND_CONSTANT(HAPTIC_EFFECT_CUSTOM);
 }
 
+void InputHapticEffect::set_direction_degrees(float p_direction_degrees) {
+	set_direction_radians(p_direction_degrees * (float)Math::PI / 180.0f);
+}
+
+float InputHapticEffect::get_direction_degrees() const {
+	return get_direction_radians() * 180.0f / (float)Math::PI;
+}
+
 void InputHapticEffect::set_direction_radians(float p_direction_radians) {
 	direction_radians = Math::fmod(p_direction_radians, (float)Math::PI);
-	if (direction_radians < 0.0f) {
-		direction_radians += (float)Math::PI;
-	}
 }
 
 float InputHapticEffect::get_direction_radians() const {
@@ -166,6 +179,8 @@ void InputHapticEffectPeriodic::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fade_level", "fade_level"), &InputHapticEffectPeriodic::set_fade_level);
 	ClassDB::bind_method(D_METHOD("get_fade_level"), &InputHapticEffectPeriodic::get_fade_level);
 
+	ClassDB::bind_method(D_METHOD("set_type", "p_type"), &InputHapticEffectPeriodic::set_type);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "period"), "set_period", "get_period");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "magnitude"), "set_magnitude", "get_magnitude");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset"), "set_offset", "get_offset");
@@ -216,9 +231,6 @@ float InputHapticEffectPeriodic::get_offset() const {
 
 void InputHapticEffectPeriodic::set_phase(float p_phase) {
 	phase = Math::fmod(p_phase, (float)Math::PI);
-	if (phase < 0.0f) {
-		phase += (float)Math::PI;
-	}
 }
 
 float InputHapticEffectPeriodic::get_phase() const {
@@ -278,6 +290,8 @@ void InputHapticEffectCondition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_center", "center"), &InputHapticEffectCondition::set_center);
 	ClassDB::bind_method(D_METHOD("get_center"), &InputHapticEffectCondition::get_center);
 
+	ClassDB::bind_method(D_METHOD("set_type", "p_type"), &InputHapticEffectCondition::set_type);
+
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "right_level"), "set_right_level", "get_right_level");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "left_level"), "set_left_level", "get_left_level");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "right_coef"), "set_right_coef", "get_right_coef");
@@ -300,9 +314,7 @@ void InputHapticEffectCondition::set_type(Type p_type) {
 }
 
 void InputHapticEffectCondition::set_right_level(const Vector3 &p_right_level) {
-	right_level.x = CLAMP(p_right_level.x, 0.0, 1.0);
-	right_level.y = CLAMP(p_right_level.y, 0.0, 1.0);
-	right_level.z = CLAMP(p_right_level.z, 0.0, 1.0);
+	right_level = p_right_level.clampf(0.0, 1.0);
 }
 
 Vector3 InputHapticEffectCondition::get_right_level() const {
@@ -310,9 +322,7 @@ Vector3 InputHapticEffectCondition::get_right_level() const {
 }
 
 void InputHapticEffectCondition::set_left_level(const Vector3 &p_left_level) {
-	left_level.x = CLAMP(p_left_level.x, 0.0, 1.0);
-	left_level.y = CLAMP(p_left_level.y, 0.0, 1.0);
-	left_level.z = CLAMP(p_left_level.z, 0.0, 1.0);
+	left_level = p_left_level.clampf(0.0, 1.0);
 }
 
 Vector3 InputHapticEffectCondition::get_left_level() const {
@@ -320,9 +330,7 @@ Vector3 InputHapticEffectCondition::get_left_level() const {
 }
 
 void InputHapticEffectCondition::set_right_coef(const Vector3 &p_right_coef) {
-	right_coef.x = CLAMP(p_right_coef.x, -1.0, 1.0);
-	right_coef.y = CLAMP(p_right_coef.y, -1.0, 1.0);
-	right_coef.z = CLAMP(p_right_coef.z, -1.0, 1.0);
+	right_coef = p_right_coef.clampf(-1.0, 1.0);
 }
 
 Vector3 InputHapticEffectCondition::get_right_coef() const {
@@ -330,9 +338,7 @@ Vector3 InputHapticEffectCondition::get_right_coef() const {
 }
 
 void InputHapticEffectCondition::set_left_coef(const Vector3 &p_left_coef) {
-	left_coef.x = CLAMP(p_left_coef.x, -1.0, 1.0);
-	left_coef.y = CLAMP(p_left_coef.y, -1.0, 1.0);
-	left_coef.z = CLAMP(p_left_coef.z, -1.0, 1.0);
+	left_coef = p_left_coef.clampf(-1.0, 1.0);
 }
 
 Vector3 InputHapticEffectCondition::get_left_coef() const {
@@ -340,9 +346,7 @@ Vector3 InputHapticEffectCondition::get_left_coef() const {
 }
 
 void InputHapticEffectCondition::set_deadband(const Vector3 &p_deadband) {
-	deadband.x = CLAMP(p_deadband.x, 0.0, 1.0);
-	deadband.y = CLAMP(p_deadband.y, 0.0, 1.0);
-	deadband.z = CLAMP(p_deadband.z, 0.0, 1.0);
+	deadband = p_deadband.clampf(0.0, 1.0);
 }
 
 Vector3 InputHapticEffectCondition::get_deadband() const {
@@ -350,9 +354,7 @@ Vector3 InputHapticEffectCondition::get_deadband() const {
 }
 
 void InputHapticEffectCondition::set_center(const Vector3 &p_center) {
-	center.x = CLAMP(p_center.x, -1.0, 1.0);
-	center.y = CLAMP(p_center.y, -1.0, 1.0);
-	center.z = CLAMP(p_center.z, -1.0, 1.0);
+	center = p_center.clampf(-1.0, 1.0);
 }
 
 Vector3 InputHapticEffectCondition::get_center() const {
@@ -471,11 +473,11 @@ void InputHapticEffectCustom::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_channels", "channels"), &InputHapticEffectCustom::set_channels);
 	ClassDB::bind_method(D_METHOD("get_channels"), &InputHapticEffectCustom::get_channels);
 
-	ClassDB::bind_method(D_METHOD("set_period", "period"), &InputHapticEffectCustom::set_period);
-	ClassDB::bind_method(D_METHOD("get_period"), &InputHapticEffectCustom::get_period);
-
 	ClassDB::bind_method(D_METHOD("set_samples", "samples"), &InputHapticEffectCustom::set_samples);
 	ClassDB::bind_method(D_METHOD("get_samples"), &InputHapticEffectCustom::get_samples);
+
+	ClassDB::bind_method(D_METHOD("set_period", "period"), &InputHapticEffectCustom::set_period);
+	ClassDB::bind_method(D_METHOD("get_period"), &InputHapticEffectCustom::get_period);
 
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &InputHapticEffectCustom::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &InputHapticEffectCustom::get_data);
@@ -493,9 +495,9 @@ void InputHapticEffectCustom::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fade_level"), &InputHapticEffectCustom::get_fade_level);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "channels"), "set_channels", "get_channels");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "period"), "set_period", "get_period");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "samples"), "set_samples", "get_samples");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data"), "set_data", "get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "period"), "set_period", "get_period");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "data"), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attack_length"), "set_attack_length", "get_attack_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attack_level"), "set_attack_level", "get_attack_level");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fade_length"), "set_fade_length", "get_fade_length");
@@ -510,14 +512,6 @@ int InputHapticEffectCustom::get_channels() const {
 	return channels;
 }
 
-void InputHapticEffectCustom::set_period(int p_period) {
-	period = CLAMP(p_period, 0.0f, UINT16_MAX / 1000.0f);
-}
-
-int InputHapticEffectCustom::get_period() const {
-	return period;
-}
-
 void InputHapticEffectCustom::set_samples(int p_samples) {
 	samples = CLAMP(p_samples, 0, UINT16_MAX);
 }
@@ -526,11 +520,19 @@ int InputHapticEffectCustom::get_samples() const {
 	return samples;
 }
 
-void InputHapticEffectCustom::set_data(const PackedByteArray &p_data) {
+void InputHapticEffectCustom::set_period(float p_period) {
+	period = CLAMP(p_period, 0.0f, UINT16_MAX / 1000.0f);
+}
+
+float InputHapticEffectCustom::get_period() const {
+	return period;
+}
+
+void InputHapticEffectCustom::set_data(const PackedInt32Array &p_data) {
 	data = p_data;
 }
 
-PackedByteArray InputHapticEffectCustom::get_data() const {
+PackedInt32Array InputHapticEffectCustom::get_data() const {
 	return data;
 }
 
