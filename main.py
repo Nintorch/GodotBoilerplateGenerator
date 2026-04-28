@@ -261,10 +261,7 @@ def class_end(line):
         if len(prop) == 2:
             code_output += f"\t{prop[1]} = p_{prop[1]};\n"
         elif len(prop) == 3 and prop[2] == "rad":
-            code_output += f"\t{prop[1]} = Math::fmod(p_{prop[1]}, (float)Math::TAU);\n"
-            code_output += f"\tif ({prop[1]} < 0.0f) " + "{\n"
-            code_output += f"\t\t{prop[1]} += (float)Math::TAU;\n"
-            code_output += "\t}\n"
+            code_output += f"\t{prop[1]} = Math::fmod(p_{prop[1]}, (float)Math::PI);\n"
         elif len(prop) == 4:
             if prop[0] == "float" or prop[0] == "int":
                 code_output += f"\t{prop[1]} = CLAMP(p_{prop[1]}, {prop[2]}, {prop[3]});\n"
